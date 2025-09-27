@@ -90,48 +90,42 @@ export const remove = mutation({
 export const search = query({
   args: {
     query: v.string(),
+    selectedTags: v.array(v.string()),
     userId: v.id("users")
   },
   handler: async (ctx, args) => {
-    if (!args.query.trim()) {
-      return await ctx.db
-        .query("links")
-        .withIndex("by_user_and_created", (q) => q.eq("userId", args.userId))
-        .order("desc")
-        .collect();
-    }
-
-    // Search in titles using the search index
-    const titleResults = await ctx.db
-      .query("links")
-      .withSearchIndex("search_title", (q) =>
-        q.search("title", args.query).eq("userId", args.userId)
-      )
-      .collect();
-
-    // Get all links to search in tags client-side (since Convex doesn't support array search)
+    // Get all links for filtering
     const allLinks = await ctx.db
       .query("links")
       .withIndex("by_user_and_created", (q) => q.eq("userId", args.userId))
+      .order("desc")
       .collect();
 
-    // Filter links that have matching tags
-    const queryLower = args.query.toLowerCase();
-    const tagResults = allLinks.filter(link =>
-      link.tags && link.tags.some(tag =>
-        tag.toLowerCase().includes(queryLower)
-      )
-    );
+    // If no search criteria, return all links
+    if (!args.query.trim() && args.selectedTags.length === 0) {
+      return allLinks;
+    }
 
-    // Combine and deduplicate results
-    const titleIds = new Set(titleResults.map(link => link._id));
-    const combinedResults = [
-      ...titleResults,
-      ...tagResults.filter(link => !titleIds.has(link._id))
-    ];
+    let results = allLinks;
 
-    // Sort by creation date (newest first)
-    return combinedResults.sort((a, b) => b.createdAt - a.createdAt);
+    // Filter by selected tags (must have ALL selected tags)
+    if (args.selectedTags.length > 0) {
+      results = results.filter(link =>
+        link.tags && args.selectedTags.every(selectedTag =>
+          link.tags!.some(linkTag => linkTag.toLowerCase() === selectedTag.toLowerCase())
+        )
+      );
+    }
+
+    // Filter by title search if query exists
+    if (args.query.trim()) {
+      const queryLower = args.query.toLowerCase();
+      results = results.filter(link =>
+        link.title.toLowerCase().includes(queryLower)
+      );
+    }
+
+    return results;
   },
 });
 

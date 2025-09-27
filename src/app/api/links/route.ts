@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
 
     const links = await convex.query(api.links.search, {
       query,
+      selectedTags: [],
       userId: userId as Id<"users">
     });
 

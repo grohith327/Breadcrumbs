@@ -7,7 +7,7 @@ import { Id } from "../../convex/_generated/dataModel";
 import { LinkCard } from "@/components/link-card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, LogOut, Search } from "lucide-react";
+import { Plus, LogOut, Search, X } from "lucide-react";
 import { useAuth } from "@/lib/auth-provider";
 import { signOut } from "@/lib/auth-client";
 import SignIn from "@/components/sign-in";
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { TagInput } from "@/components/ui/tag-input";
+import { Badge } from "@/components/ui/badge";
 
 export default function Home() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -27,11 +28,12 @@ export default function Home() {
   const [url, setUrl] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const { user, isLoading } = useAuth();
 
   const links = useQuery(
     api.links.search,
-    user ? { query: searchQuery, userId: user.id as Id<"users"> } : "skip"
+    user ? { query: searchQuery, selectedTags, userId: user.id as Id<"users"> } : "skip"
   );
 
   const createLink = useMutation(api.links.create);
@@ -63,7 +65,24 @@ export default function Home() {
   };
 
   const handleTagClick = (tag: string) => {
-    setSearchQuery(tag);
+    setSelectedTags(prev => {
+      if (prev.includes(tag)) {
+        // Remove tag if already selected
+        return prev.filter(t => t !== tag);
+      } else {
+        // Add tag if not selected
+        return [...prev, tag];
+      }
+    });
+  };
+
+  const removeSelectedTag = (tag: string) => {
+    setSelectedTags(prev => prev.filter(t => t !== tag));
+  };
+
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    setSelectedTags([]);
   };
 
   if (isLoading) {
@@ -165,14 +184,42 @@ export default function Home() {
           </div>
 
           {/* Search Section */}
-          <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              placeholder="Search links and tags..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-11 sm:h-10"
-            />
+          <div className="space-y-4 mb-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
+                placeholder="Search links and tags..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-11 sm:h-10"
+              />
+            </div>
+
+            {/* Selected Tags and Clear Button */}
+            {(selectedTags.length > 0 || searchQuery) && (
+              <div className="flex items-center gap-2 flex-wrap">
+                {selectedTags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="default"
+                    className="text-xs cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={() => removeSelectedTag(tag)}
+                  >
+                    {tag}
+                    <X className="w-3 h-3 ml-1" />
+                  </Badge>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAllFilters}
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-3 h-3 mr-1" />
+                  Clear all
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Divider */}
@@ -193,7 +240,7 @@ export default function Home() {
             ) : (
               <div className="grid gap-4">
                 {links.map((link) => (
-                  <LinkCard key={link._id} link={link} onTagClick={handleTagClick} />
+                  <LinkCard key={link._id} link={link} onTagClick={handleTagClick} selectedTags={selectedTags} />
                 ))}
               </div>
             )}

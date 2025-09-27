@@ -36,9 +36,10 @@ interface LinkCardProps {
     createdAt: number;
   };
   onTagClick?: (tag: string) => void;
+  selectedTags?: string[];
 }
 
-export function LinkCard({ link, onTagClick }: LinkCardProps) {
+export function LinkCard({ link, onTagClick, selectedTags = [] }: LinkCardProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [title, setTitle] = useState(link.title);
   const [url, setUrl] = useState(link.url);
@@ -157,16 +158,23 @@ export function LinkCard({ link, onTagClick }: LinkCardProps) {
       {link.tags && link.tags.length > 0 && (
         <CardContent className="pt-0">
           <div className="flex flex-wrap gap-1">
-            {link.tags.map((tag) => (
-              <Badge
-                key={tag}
-                variant="secondary"
-                className="text-xs cursor-pointer hover:bg-secondary/80 transition-colors"
-                onClick={() => onTagClick?.(tag)}
-              >
-                {tag}
-              </Badge>
-            ))}
+            {link.tags.map((tag) => {
+              const isSelected = selectedTags.includes(tag);
+              return (
+                <Badge
+                  key={tag}
+                  variant={isSelected ? "default" : "secondary"}
+                  className={`text-xs cursor-pointer transition-colors ${
+                    isSelected
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "hover:bg-secondary/80"
+                  }`}
+                  onClick={() => onTagClick?.(tag)}
+                >
+                  {tag}
+                </Badge>
+              );
+            })}
           </div>
         </CardContent>
       )}
