@@ -37,7 +37,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, url, description, tags } = body;
+    const { title, url, tags } = body;
 
     if (!title || !url) {
       return NextResponse.json(
@@ -50,7 +50,6 @@ export async function PUT(
       id: id as Id<"links">,
       title,
       url,
-      description,
       tags,
     });
 

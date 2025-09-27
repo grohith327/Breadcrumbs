@@ -5,7 +5,6 @@ export const create = mutation({
   args: {
     title: v.string(),
     url: v.string(),
-    description: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
@@ -13,7 +12,6 @@ export const create = mutation({
     return await ctx.db.insert("links", {
       title: args.title,
       url: args.url,
-      description: args.description,
       tags: args.tags || [],
       createdAt: now,
       updatedAt: now,
@@ -44,7 +42,6 @@ export const update = mutation({
     id: v.id("links"),
     title: v.string(),
     url: v.string(),
-    description: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
@@ -76,7 +73,7 @@ export const search = query({
 
     return await ctx.db
       .query("links")
-      .withSearchIndex("search_title_description", (q) =>
+      .withSearchIndex("search_title", (q) =>
         q.search("title", args.query)
       )
       .collect();

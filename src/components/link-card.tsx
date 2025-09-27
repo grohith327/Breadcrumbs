@@ -21,7 +21,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { TagInput } from "@/components/ui/tag-input";
 import { Edit, Trash2, ExternalLink } from "lucide-react";
@@ -31,7 +30,6 @@ interface LinkCardProps {
     _id: Id<"links">;
     title: string;
     url: string;
-    description?: string;
     tags?: string[];
     createdAt: number;
   };
@@ -41,7 +39,6 @@ export function LinkCard({ link }: LinkCardProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [title, setTitle] = useState(link.title);
   const [url, setUrl] = useState(link.url);
-  const [description, setDescription] = useState(link.description || "");
   const [tags, setTags] = useState<string[]>(link.tags || []);
 
   const updateLink = useMutation(api.links.update);
@@ -58,7 +55,6 @@ export function LinkCard({ link }: LinkCardProps) {
         id: link._id,
         title: title.trim(),
         url: url.trim(),
-        description: description.trim() || undefined,
         tags: tags.length > 0 ? tags : undefined,
       });
       setEditOpen(false);
@@ -127,15 +123,6 @@ export function LinkCard({ link }: LinkCardProps) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="edit-description">Description</Label>
-                    <Textarea
-                      id="edit-description"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      rows={3}
-                    />
-                  </div>
-                  <div className="space-y-2">
                     <Label htmlFor="edit-tags">Tags</Label>
                     <TagInput
                       value={tags}
@@ -159,20 +146,15 @@ export function LinkCard({ link }: LinkCardProps) {
           </div>
         </div>
       </CardHeader>
-      {(link.description || (link.tags && link.tags.length > 0)) && (
+      {link.tags && link.tags.length > 0 && (
         <CardContent className="pt-0">
-          {link.description && (
-            <p className="text-muted-foreground text-sm mb-3">{link.description}</p>
-          )}
-          {link.tags && link.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {link.tags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
+          <div className="flex flex-wrap gap-1">
+            {link.tags.map((tag) => (
+              <Badge key={tag} variant="secondary" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
+          </div>
         </CardContent>
       )}
     </Card>

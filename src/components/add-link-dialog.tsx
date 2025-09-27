@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { TagInput } from "@/components/ui/tag-input";
 import { Plus } from "lucide-react";
@@ -21,7 +20,6 @@ export function AddLinkDialog() {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
-  const [description, setDescription] = useState("");
   const [tags, setTags] = useState<string[]>([]);
 
   const createLink = useMutation(api.links.create);
@@ -36,13 +34,11 @@ export function AddLinkDialog() {
       await createLink({
         title: title.trim(),
         url: url.trim(),
-        description: description.trim() || undefined,
         tags: tags.length > 0 ? tags : undefined,
       });
 
       setTitle("");
       setUrl("");
-      setDescription("");
       setTags([]);
       setOpen(false);
     } catch (error) {
@@ -82,16 +78,6 @@ export function AddLinkDialog() {
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://example.com"
               required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional description"
-              rows={3}
             />
           </div>
           <div className="space-y-2">

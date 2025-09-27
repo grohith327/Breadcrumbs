@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, url, description, tags } = body;
+    const { title, url, tags } = body;
 
     if (!title || !url) {
       return NextResponse.json(
@@ -36,7 +36,6 @@ export async function POST(request: NextRequest) {
     const link = await convex.mutation(api.links.create, {
       title,
       url,
-      description,
       tags,
     });
 
