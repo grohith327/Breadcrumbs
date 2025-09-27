@@ -35,9 +35,10 @@ interface LinkCardProps {
     userId?: Id<"users">;
     createdAt: number;
   };
+  onTagClick?: (tag: string) => void;
 }
 
-export function LinkCard({ link }: LinkCardProps) {
+export function LinkCard({ link, onTagClick }: LinkCardProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [title, setTitle] = useState(link.title);
   const [url, setUrl] = useState(link.url);
@@ -157,7 +158,12 @@ export function LinkCard({ link }: LinkCardProps) {
         <CardContent className="pt-0">
           <div className="flex flex-wrap gap-1">
             {link.tags.map((tag) => (
-              <Badge key={tag} variant="secondary" className="text-xs">
+              <Badge
+                key={tag}
+                variant="secondary"
+                className="text-xs cursor-pointer hover:bg-secondary/80 transition-colors"
+                onClick={() => onTagClick?.(tag)}
+              >
                 {tag}
               </Badge>
             ))}

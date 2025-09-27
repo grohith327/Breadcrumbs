@@ -7,7 +7,7 @@ import { Id } from "../../convex/_generated/dataModel";
 import { LinkCard } from "@/components/link-card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, LogOut } from "lucide-react";
+import { Plus, LogOut, Search } from "lucide-react";
 import { useAuth } from "@/lib/auth-provider";
 import { signOut } from "@/lib/auth-client";
 import SignIn from "@/components/sign-in";
@@ -26,11 +26,12 @@ export default function Home() {
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
   const [tags, setTags] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const { user, isLoading } = useAuth();
 
   const links = useQuery(
-    api.links.getAll,
-    user ? { userId: user.id as Id<"users"> } : "skip"
+    api.links.search,
+    user ? { query: searchQuery, userId: user.id as Id<"users"> } : "skip"
   );
 
   const createLink = useMutation(api.links.create);
@@ -59,6 +60,10 @@ export default function Home() {
     } catch (error) {
       console.error("Failed to create link:", error);
     }
+  };
+
+  const handleTagClick = (tag: string) => {
+    setSearchQuery(tag);
   };
 
   if (isLoading) {
@@ -159,6 +164,17 @@ export default function Home() {
             </Dialog>
           </div>
 
+          {/* Search Section */}
+          <div className="relative mb-6">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Search links and tags..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-11 sm:h-10"
+            />
+          </div>
+
           {/* Divider */}
           <div className="border-t border-gray-200 dark:border-gray-800 mb-6"></div>
 
@@ -170,12 +186,14 @@ export default function Home() {
               </div>
             ) : links.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground mb-4">No links yet. Add your first link!</p>
+                <p className="text-muted-foreground mb-4">
+                  {searchQuery ? "No links found matching your search." : "No links yet. Add your first link!"}
+                </p>
               </div>
             ) : (
               <div className="grid gap-4">
                 {links.map((link) => (
-                  <LinkCard key={link._id} link={link} />
+                  <LinkCard key={link._id} link={link} onTagClick={handleTagClick} />
                 ))}
               </div>
             )}
