@@ -98,7 +98,7 @@ export function LinkCard({ link }: LinkCardProps) {
               </a>
             </CardDescription>
           </div>
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex gap-1 opacity-100">
             <Dialog open={editOpen} onOpenChange={setEditOpen}>
               <DialogTrigger asChild>
                 <Button variant="ghost" size="sm">
