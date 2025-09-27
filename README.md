@@ -1,36 +1,128 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Breadcrumbs - Link Manager
+
+A modern link management application built with Next.js and React Native, using Convex as the backend database.
+
+## Project Structure
+
+This project consists of two applications:
+
+1. **Next.js Web App** - A responsive web application for managing links
+2. **React Native Mobile App** (`/mobile` directory) - A cross-platform mobile app with the same functionality
+
+## Features
+
+- ✨ Create, read, update, and delete links
+- 🔍 Search functionality with real-time filtering
+- 🏷️ Tag management for better organization
+- 📱 Responsive design with dark mode
+- 🔗 Click to open links directly
+- 📖 Optional descriptions for links
+- ⚡ Real-time synchronization via Convex
+
+## Tech Stack
+
+### Web App
+- **Next.js 15** - React framework with App Router
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
+- **Shadcn/ui** - UI component library
+- **Convex** - Backend database and real-time sync
+
+### Mobile App
+- **Expo** - React Native framework
+- **TypeScript** - Type safety
+- **React Native** - Cross-platform mobile development
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js 18+
+- npm or yarn
+- Convex account (sign up at [convex.dev](https://convex.dev))
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Clone and install dependencies:**
+   ```bash
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Set up Convex:**
+   ```bash
+   # Login to Convex (follow the prompts)
+   npx convex login
 
-## Learn More
+   # Initialize and deploy your Convex project
+   npx convex deploy
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+3. **Configure environment variables:**
+   - Copy the Convex deployment URL from the deploy output
+   - Add it to `.env.local`:
+     ```
+     NEXT_PUBLIC_CONVEX_URL=https://your-deployment-url.convex.cloud
+     ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. **Start the web application:**
+   ```bash
+   npm run dev
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+5. **Set up the mobile app:**
+   ```bash
+   cd mobile
+   npm install
 
-## Deploy on Vercel
+   # Start Expo development server
+   npm start
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   Then use the Expo Go app on your phone or an emulator to run the mobile app.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Development
+
+- **Web app**: Runs on `http://localhost:3000`
+- **Mobile app**: Use Expo Go app to scan QR code
+- **Convex Dashboard**: Monitor your database at the Convex dashboard
+
+## API Routes
+
+The Next.js app provides REST API endpoints for the mobile app:
+
+- `GET /api/links` - Get all links (with optional search)
+- `POST /api/links` - Create a new link
+- `GET /api/links/[id]` - Get a specific link
+- `PUT /api/links/[id]` - Update a link
+- `DELETE /api/links/[id]` - Delete a link
+
+## Deployment
+
+### Web App (Vercel)
+
+1. Connect your GitHub repo to Vercel
+2. Add environment variables in Vercel dashboard:
+   - `NEXT_PUBLIC_CONVEX_URL`
+3. Deploy
+
+### Mobile App
+
+1. Build with Expo:
+   ```bash
+   cd mobile
+   npx expo build
+   ```
+
+2. Follow Expo's deployment guides for App Store/Play Store
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+MIT License
