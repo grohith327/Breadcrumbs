@@ -114,7 +114,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Translucent Nav Bar */}
-      <nav className="fixed top-6 left-6 right-6 z-30">
+      <nav className="fixed top-6 left-6 right-6 z-50">
         <div className="flex items-center justify-between max-w-4xl mx-auto rounded-lg px-6 py-3 border border-gray-700/50 bg-black/80 backdrop-blur-sm">
           <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
             <span className="text-2xl">🍞</span>
@@ -134,7 +134,7 @@ export default function Home() {
       </nav>
 
       {/* Main Content */}
-      <div className="pt-28 pb-6 px-6">
+      <div className="pt-28 pb-6 px-6 relative z-10 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto">
           {/* Header Section */}
           <div className="flex items-center justify-between mb-6">
