@@ -24,7 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TagInput } from "@/components/ui/tag-input";
-import { Edit, Trash2, ExternalLink } from "lucide-react";
+import { Edit, Trash2, ExternalLink, Bot } from "lucide-react";
 
 interface LinkCardProps {
   link: {
@@ -37,9 +37,10 @@ interface LinkCardProps {
   };
   onTagClick?: (tag: string) => void;
   selectedTags?: string[];
+  onAIClick?: (url: string, title: string) => void;
 }
 
-export function LinkCard({ link, onTagClick, selectedTags = [] }: LinkCardProps) {
+export function LinkCard({ link, onTagClick, selectedTags = [], onAIClick }: LinkCardProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [title, setTitle] = useState(link.title);
   const [url, setUrl] = useState(link.url);
@@ -101,6 +102,14 @@ export function LinkCard({ link, onTagClick, selectedTags = [] }: LinkCardProps)
             </CardDescription>
           </div>
           <div className="flex gap-1 opacity-100">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onAIClick?.(link.url, link.title)}
+              title="Generate AI summary of this page"
+            >
+              <Bot className="w-4 h-4 text-blue-500" />
+            </Button>
             <Dialog open={editOpen} onOpenChange={setEditOpen}>
               <DialogTrigger asChild>
                 <Button variant="ghost" size="sm">

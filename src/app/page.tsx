@@ -11,6 +11,7 @@ import { Plus, LogOut, Search, X } from "lucide-react";
 import { useAuth } from "@/lib/auth-provider";
 import { signOut } from "@/lib/auth-client";
 import SignIn from "@/components/sign-in";
+import { SummaryDialog } from "@/components/summary-dialog";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,9 @@ export default function Home() {
   const [tags, setTags] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  const [summaryUrl, setSummaryUrl] = useState("");
+  const [summaryTitle, setSummaryTitle] = useState("");
   const { user, isLoading } = useAuth();
 
   const links = useQuery(
@@ -83,6 +87,12 @@ export default function Home() {
   const clearAllFilters = () => {
     setSearchQuery("");
     setSelectedTags([]);
+  };
+
+  const handleAIClick = (url: string, title: string) => {
+    setSummaryUrl(url);
+    setSummaryTitle(title);
+    setSummaryOpen(true);
   };
 
   if (isLoading) {
@@ -240,13 +250,27 @@ export default function Home() {
             ) : (
               <div className="grid gap-4">
                 {links.map((link) => (
-                  <LinkCard key={link._id} link={link} onTagClick={handleTagClick} selectedTags={selectedTags} />
+                  <LinkCard
+                    key={link._id}
+                    link={link}
+                    onTagClick={handleTagClick}
+                    selectedTags={selectedTags}
+                    onAIClick={handleAIClick}
+                  />
                 ))}
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* AI Summary Dialog */}
+      <SummaryDialog
+        open={summaryOpen}
+        onOpenChange={setSummaryOpen}
+        url={summaryUrl}
+        title={summaryTitle}
+      />
     </div>
   );
 }
