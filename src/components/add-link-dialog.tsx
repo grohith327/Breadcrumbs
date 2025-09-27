@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { Id } from "../../convex/_generated/dataModel";
+import { useAuth } from "@/lib/auth-provider";
 import {
   Dialog,
   DialogContent,
@@ -22,19 +24,24 @@ export function AddLinkDialog() {
   const [url, setUrl] = useState("");
   const [tags, setTags] = useState<string[]>([]);
 
+  const { user } = useAuth();
   const createLink = useMutation(api.links.create);
-  const existingTags = useQuery(api.links.getAllTags) ?? [];
+  const existingTags = useQuery(
+    api.links.getAllTags,
+    user ? { userId: user.id as Id<"users"> } : "skip"
+  ) ?? [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim() || !url.trim()) return;
+    if (!title.trim() || !url.trim() || !user) return;
 
     try {
       await createLink({
         title: title.trim(),
         url: url.trim(),
         tags: tags.length > 0 ? tags : undefined,
+        userId: user.id as Id<"users">,
       });
 
       setTitle("");

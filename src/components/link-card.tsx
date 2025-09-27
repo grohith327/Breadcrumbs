@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
+import { useAuth } from "@/lib/auth-provider";
 import {
   Card,
   CardContent,
@@ -31,6 +32,7 @@ interface LinkCardProps {
     title: string;
     url: string;
     tags?: string[];
+    userId?: Id<"users">;
     createdAt: number;
   };
 }
@@ -41,14 +43,18 @@ export function LinkCard({ link }: LinkCardProps) {
   const [url, setUrl] = useState(link.url);
   const [tags, setTags] = useState<string[]>(link.tags || []);
 
+  const { user } = useAuth();
   const updateLink = useMutation(api.links.update);
   const deleteLink = useMutation(api.links.remove);
-  const existingTags = useQuery(api.links.getAllTags) ?? [];
+  const existingTags = useQuery(
+    api.links.getAllTags,
+    user ? { userId: user.id as Id<"users"> } : "skip"
+  ) ?? [];
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim() || !url.trim()) return;
+    if (!title.trim() || !url.trim() || !user) return;
 
     try {
       await updateLink({
@@ -56,6 +62,7 @@ export function LinkCard({ link }: LinkCardProps) {
         title: title.trim(),
         url: url.trim(),
         tags: tags.length > 0 ? tags : undefined,
+        userId: user.id as Id<"users">,
       });
       setEditOpen(false);
     } catch (error) {
@@ -64,9 +71,9 @@ export function LinkCard({ link }: LinkCardProps) {
   };
 
   const handleDelete = async () => {
-    if (confirm("Are you sure you want to delete this link?")) {
+    if (confirm("Are you sure you want to delete this link?") && user) {
       try {
-        await deleteLink({ id: link._id });
+        await deleteLink({ id: link._id, userId: user.id as Id<"users"> });
       } catch (error) {
         console.error("Failed to delete link:", error);
       }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../../convex/_generated/api";
+import { Id } from "../../../../convex/_generated/dataModel";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -8,8 +9,19 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const query = searchParams.get("search") || "";
+    const userId = searchParams.get("userId");
 
-    const links = await convex.query(api.links.search, { query });
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: "User ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const links = await convex.query(api.links.search, {
+      query,
+      userId: userId as Id<"users">
+    });
 
     return NextResponse.json({ success: true, data: links });
   } catch (error) {
@@ -24,11 +36,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, url, tags } = body;
+    const { title, url, tags, userId } = body;
 
-    if (!title || !url) {
+    if (!title || !url || !userId) {
       return NextResponse.json(
-        { success: false, error: "Title and URL are required" },
+        { success: false, error: "Title, URL, and User ID are required" },
         { status: 400 }
       );
     }
@@ -37,6 +49,7 @@ export async function POST(request: NextRequest) {
       title,
       url,
       tags,
+      userId: userId as Id<"users">,
     });
 
     return NextResponse.json({ success: true, data: link }, { status: 201 });

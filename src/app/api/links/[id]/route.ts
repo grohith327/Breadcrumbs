@@ -11,7 +11,20 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const link = await convex.query(api.links.getById, { id: id as Id<"links"> });
+    const searchParams = request.nextUrl.searchParams;
+    const userId = searchParams.get("userId");
+
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: "User ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const link = await convex.query(api.links.getById, {
+      id: id as Id<"links">,
+      userId: userId as Id<"users">
+    });
 
     if (!link) {
       return NextResponse.json(
@@ -37,11 +50,11 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, url, tags } = body;
+    const { title, url, tags, userId } = body;
 
-    if (!title || !url) {
+    if (!title || !url || !userId) {
       return NextResponse.json(
-        { success: false, error: "Title and URL are required" },
+        { success: false, error: "Title, URL, and User ID are required" },
         { status: 400 }
       );
     }
@@ -51,6 +64,7 @@ export async function PUT(
       title,
       url,
       tags,
+      userId: userId as Id<"users">,
     });
 
     return NextResponse.json({ success: true, data: link });
@@ -69,7 +83,20 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await convex.mutation(api.links.remove, { id: id as Id<"links"> });
+    const searchParams = request.nextUrl.searchParams;
+    const userId = searchParams.get("userId");
+
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: "User ID is required" },
+        { status: 400 }
+      );
+    }
+
+    await convex.mutation(api.links.remove, {
+      id: id as Id<"links">,
+      userId: userId as Id<"users">
+    });
 
     return NextResponse.json({ success: true, message: "Link deleted successfully" });
   } catch (error) {

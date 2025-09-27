@@ -6,6 +6,7 @@ export const create = mutation({
     title: v.string(),
     url: v.string(),
     tags: v.optional(v.array(v.string())),
+    userId: v.id("users"),
   },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -13,6 +14,7 @@ export const create = mutation({
       title: args.title,
       url: args.url,
       tags: args.tags || [],
+      userId: args.userId,
       createdAt: now,
       updatedAt: now,
     });
@@ -20,20 +22,28 @@ export const create = mutation({
 });
 
 export const getAll = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
     return await ctx.db
       .query("links")
-      .withIndex("by_created_at")
+      .withIndex("by_user_and_created", (q) => q.eq("userId", args.userId))
       .order("desc")
       .collect();
   },
 });
 
 export const getById = query({
-  args: { id: v.id("links") },
+  args: {
+    id: v.id("links"),
+    userId: v.id("users")
+  },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    const link = await ctx.db.get(args.id);
+    // Only return the link if it belongs to the user
+    if (link && link.userId === args.userId) {
+      return link;
+    }
+    return null;
   },
 });
 
@@ -43,9 +53,17 @@ export const update = mutation({
     title: v.string(),
     url: v.string(),
     tags: v.optional(v.array(v.string())),
+    userId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    const { id, ...updates } = args;
+    const { id, userId, ...updates } = args;
+
+    // Verify the link belongs to the user
+    const existingLink = await ctx.db.get(id);
+    if (!existingLink || existingLink.userId !== userId) {
+      throw new Error("Link not found or access denied");
+    }
+
     return await ctx.db.patch(id, {
       ...updates,
       updatedAt: Date.now(),
@@ -54,19 +72,31 @@ export const update = mutation({
 });
 
 export const remove = mutation({
-  args: { id: v.id("links") },
+  args: {
+    id: v.id("links"),
+    userId: v.id("users")
+  },
   handler: async (ctx, args) => {
+    // Verify the link belongs to the user
+    const existingLink = await ctx.db.get(args.id);
+    if (!existingLink || existingLink.userId !== args.userId) {
+      throw new Error("Link not found or access denied");
+    }
+
     return await ctx.db.delete(args.id);
   },
 });
 
 export const search = query({
-  args: { query: v.string() },
+  args: {
+    query: v.string(),
+    userId: v.id("users")
+  },
   handler: async (ctx, args) => {
     if (!args.query.trim()) {
       return await ctx.db
         .query("links")
-        .withIndex("by_created_at")
+        .withIndex("by_user_and_created", (q) => q.eq("userId", args.userId))
         .order("desc")
         .collect();
     }
@@ -74,16 +104,20 @@ export const search = query({
     return await ctx.db
       .query("links")
       .withSearchIndex("search_title", (q) =>
-        q.search("title", args.query)
+        q.search("title", args.query).eq("userId", args.userId)
       )
       .collect();
   },
 });
 
 export const getAllTags = query({
-  args: {},
-  handler: async (ctx) => {
-    const links = await ctx.db.query("links").collect();
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const links = await ctx.db
+      .query("links")
+      .withIndex("by_user_and_created", (q) => q.eq("userId", args.userId))
+      .collect();
+
     const tagSet = new Set<string>();
 
     links.forEach(link => {
