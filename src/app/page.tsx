@@ -42,16 +42,12 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex flex-col space-y-6">
-          <header className="flex justify-between items-center">
-            <div className="text-center flex-1">
+          <header className="flex items-center relative">
+            <div className="flex-1 text-center">
               <h1 className="text-3xl font-bold mb-2">🍞 Breadcrumbs</h1>
               <p className="text-muted-foreground">Store and manage your links with ease</p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-sm font-medium">{user.name || user.email}</p>
-                <p className="text-xs text-muted-foreground">{user.email}</p>
-              </div>
+            <div className="absolute right-0">
               <Button
                 variant="outline"
                 size="sm"
