@@ -114,18 +114,18 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Translucent Nav Bar */}
-      <nav className="fixed top-6 left-6 right-6 z-50">
-        <div className="flex items-center justify-between max-w-4xl mx-auto rounded-lg px-6 py-3 border border-gray-700/50 bg-black/80 backdrop-blur-sm">
-          <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
-            <span className="text-2xl">🍞</span>
-            <h1 className="text-xl font-bold text-white">Breadcrumbs</h1>
+      <nav className="fixed top-4 left-4 right-4 sm:top-6 sm:left-6 sm:right-6 z-50">
+        <div className="flex items-center justify-between max-w-4xl mx-auto rounded-lg px-4 py-3 sm:px-6 border border-gray-700/50 bg-black/80 backdrop-blur-sm">
+          <div className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity">
+            <span className="text-xl sm:text-2xl">🍞</span>
+            <h1 className="text-lg sm:text-xl font-bold text-white">Breadcrumbs</h1>
           </div>
 
           <Button
             variant="ghost"
             size="sm"
             onClick={() => signOut()}
-            className="gap-2 text-white hover:bg-white/10"
+            className="gap-1 sm:gap-2 text-white hover:bg-white/10 h-9 px-2 sm:px-3"
           >
             <LogOut className="w-4 h-4" />
             <span className="hidden sm:inline">Sign Out</span>
@@ -134,15 +134,15 @@ export default function Home() {
       </nav>
 
       {/* Main Content */}
-      <div className="pt-28 pb-6 px-6 relative z-10 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto">
+      <div className="pt-24 pb-4 px-4 sm:pt-28 sm:pb-6 sm:px-6 relative z-10 backdrop-blur-sm">
+        <div className="max-w-6xl mx-auto">
           {/* Header Section */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl">Your links</h2>
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-semibold">Your links</h2>
             <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="rounded-full w-8 h-8 p-0">
-                  <Plus className="w-4 h-4" />
+                <Button className="rounded-full w-10 h-10 sm:w-8 sm:h-8 p-0">
+                  <Plus className="w-5 h-5 sm:w-4 sm:h-4" />
                 </Button>
               </DialogTrigger>
               <DialogContent className="mx-4 max-w-[calc(100vw-2rem)] sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
@@ -194,14 +194,14 @@ export default function Home() {
           </div>
 
           {/* Search Section */}
-          <div className="space-y-4 mb-6">
+          <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
                 placeholder="Search links and tags..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-11 sm:h-10"
+                className="pl-10 h-12 sm:h-10 text-base sm:text-sm"
               />
             </div>
 
@@ -212,20 +212,20 @@ export default function Home() {
                   <Badge
                     key={tag}
                     variant="default"
-                    className="text-xs cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
+                    className="text-sm sm:text-xs cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 h-8 sm:h-auto px-3 sm:px-2"
                     onClick={() => removeSelectedTag(tag)}
                   >
                     {tag}
-                    <X className="w-3 h-3 ml-1" />
+                    <X className="w-4 h-4 sm:w-3 sm:h-3 ml-1" />
                   </Badge>
                 ))}
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={clearAllFilters}
-                  className="text-xs text-muted-foreground hover:text-foreground"
+                  className="text-sm sm:text-xs text-muted-foreground hover:text-foreground h-8 sm:h-auto"
                 >
-                  <X className="w-3 h-3 mr-1" />
+                  <X className="w-4 h-4 sm:w-3 sm:h-3 mr-1" />
                   Clear all
                 </Button>
               </div>
@@ -233,7 +233,7 @@ export default function Home() {
           </div>
 
           {/* Divider */}
-          <div className="border-t border-gray-200 dark:border-gray-800 mb-6"></div>
+          <div className="border-t border-gray-200 dark:border-gray-800 mb-4 sm:mb-6"></div>
 
           {/* Links Content */}
           <div className="space-y-4">
@@ -248,7 +248,7 @@ export default function Home() {
                 </p>
               </div>
             ) : (
-              <div className="grid gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                 {links.map((link) => (
                   <LinkCard
                     key={link._id}

@@ -37,26 +37,26 @@ export default function SignIn() {
 
   return (
     <Card
-      className={`max-w-md ${emailSent ? "border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-950/50" : ""}`}
+      className={`w-full max-w-md mx-4 sm:mx-0 ${emailSent ? "border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-950/50" : ""}`}
     >
-      <CardHeader>
-        <CardTitle className="text-lg md:text-xl">
+      <CardHeader className="px-4 sm:px-6">
+        <CardTitle className="text-xl sm:text-2xl">
           {emailSent ? "Check Your Email" : "Sign In"}
         </CardTitle>
-        <CardDescription className="text-xs md:text-sm">
+        <CardDescription className="text-sm sm:text-base">
           {emailSent
             ? `We've sent a magic link to ${email}. Click the link in your email to sign in.`
             : "Enter your email below to login to your account"}
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="grid gap-4">
+      <CardContent className="px-4 sm:px-6">
+        <div className="grid gap-4 sm:gap-6">
           {emailSent && (
             <div className="flex justify-center py-4">
               <div className="flex items-center gap-3 text-green-600 dark:text-green-400">
-                <CheckCircle size={48} />
+                <CheckCircle size={48} className="flex-shrink-0" />
                 <div>
-                  <p className="font-medium">Magic link sent!</p>
+                  <p className="font-medium text-base">Magic link sent!</p>
                   <p className="text-sm text-muted-foreground">
                     Check your email
                   </p>
@@ -65,8 +65,8 @@ export default function SignIn() {
             </div>
           )}
 
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
+          <div className="grid gap-3 sm:gap-2">
+            <Label htmlFor="email" className="text-sm font-medium">Email</Label>
             <Input
               id="email"
               type="email"
@@ -77,10 +77,11 @@ export default function SignIn() {
                 setEmail(e.target.value);
               }}
               value={email}
+              className="h-12 sm:h-10 text-base sm:text-sm"
             />
             <Button
               disabled={loading || emailSent}
-              className="gap-2"
+              className="gap-2 h-12 sm:h-10 text-base sm:text-sm"
               onClick={async () => {
                 if (!email.trim()) return;
 
@@ -117,14 +118,14 @@ export default function SignIn() {
             </Button>
 
             {emailSent && (
-              <div className="flex flex-col gap-2 mt-4">
+              <div className="flex flex-col gap-3 mt-4">
                 <p className="text-sm text-muted-foreground text-center">
                   Did not receive the email? Check your spam folder or try
                   again.
                 </p>
                 <Button
                   variant="outline"
-                  className="gap-2"
+                  className="gap-2 h-12 sm:h-10 text-base sm:text-sm"
                   onClick={() => {
                     // Reset persistent state
                     persistentState.emailSent = false;
