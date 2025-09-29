@@ -7,10 +7,10 @@ import { Id } from "../../convex/_generated/dataModel";
 import { LinkCard } from "@/components/link-card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, LogOut, Search, X } from "lucide-react";
+import { Plus, LogOut, Search, X, LogIn } from "lucide-react";
 import { useAuth } from "@/lib/auth-provider";
 import { signOut } from "@/lib/auth-client";
-import SignIn from "@/components/sign-in";
+import Link from "next/link";
 import { SummaryDialog } from "@/components/summary-dialog";
 import {
   Dialog,
@@ -107,9 +107,82 @@ export default function Home() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <SignIn />
-      </div>
+      <>
+        {/* Landing Page */}
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+          {/* Navbar */}
+          <nav className="fixed top-4 left-4 right-4 sm:top-6 sm:left-6 sm:right-6 z-50">
+            <div className="flex items-center justify-between max-w-6xl mx-auto rounded-lg px-4 py-3 sm:px-6 border border-gray-700/50 bg-gray-800/80 backdrop-blur-sm">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="text-xl sm:text-2xl">🍞</span>
+                <h1 className="text-lg sm:text-xl font-bold text-white">Breadcrumbs</h1>
+              </div>
+
+              <Link href="/signin">
+                <Button variant="ghost" size="sm" className="gap-1 sm:gap-2 text-white hover:bg-white/10 h-9 px-2 sm:px-3">
+                  <LogIn className="w-4 h-4" />
+                  <span>Sign In</span>
+                </Button>
+              </Link>
+            </div>
+          </nav>
+
+          {/* Hero Section */}
+          <div className="flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 text-center">
+            <div className="max-w-4xl mx-auto space-y-8">
+              <div className="space-y-4">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight">
+                  Your Digital Trail of{" "}
+                  <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                    Knowledge
+                  </span>
+                </h1>
+                <p className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto">
+                  Save, organize, and rediscover the web pages that matter most. AI-powered summaries help you remember why each link was worth saving.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3 justify-center items-center pt-4">
+                <Link href="/signin">
+                  <Button size="lg" className="h-12 px-8">
+                    Get Started
+                  </Button>
+                </Link>
+                <p className="text-sm text-gray-400">
+                  Start organizing your bookmarks today
+                </p>
+              </div>
+
+              {/* Features Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12 sm:pt-16">
+                <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg p-6 space-y-3">
+                  <div className="text-3xl">🏷️</div>
+                  <h3 className="text-lg font-semibold text-white">Smart Tagging</h3>
+                  <p className="text-gray-400 text-sm">
+                    Organize your links with custom tags and find them instantly with powerful search.
+                  </p>
+                </div>
+
+                <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg p-6 space-y-3">
+                  <div className="text-3xl">🤖</div>
+                  <h3 className="text-lg font-semibold text-white">AI Summaries</h3>
+                  <p className="text-gray-400 text-sm">
+                    Automatically generate summaries of saved pages so you never forget what they&apos;re about.
+                  </p>
+                </div>
+
+                <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg p-6 space-y-3">
+                  <div className="text-3xl">⚡</div>
+                  <h3 className="text-lg font-semibold text-white">Lightning Fast</h3>
+                  <p className="text-gray-400 text-sm">
+                    Real-time sync across all your devices. Access your bookmarks anywhere, anytime.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
     );
   }
 
