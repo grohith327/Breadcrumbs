@@ -33,6 +33,7 @@ export default function Home() {
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [summaryUrl, setSummaryUrl] = useState("");
   const [summaryTitle, setSummaryTitle] = useState("");
+  const [summaryLinkId, setSummaryLinkId] = useState<Id<"links"> | null>(null);
   const { user, isLoading } = useAuth();
 
   const links = useQuery(
@@ -89,9 +90,10 @@ export default function Home() {
     setSelectedTags([]);
   };
 
-  const handleAIClick = (url: string, title: string) => {
+  const handleAIClick = (url: string, title: string, linkId: Id<"links">) => {
     setSummaryUrl(url);
     setSummaryTitle(title);
+    setSummaryLinkId(linkId);
     setSummaryOpen(true);
   };
 
@@ -265,12 +267,15 @@ export default function Home() {
       </div>
 
       {/* AI Summary Dialog */}
-      <SummaryDialog
-        open={summaryOpen}
-        onOpenChange={setSummaryOpen}
-        url={summaryUrl}
-        title={summaryTitle}
-      />
+      {summaryLinkId && (
+        <SummaryDialog
+          open={summaryOpen}
+          onOpenChange={setSummaryOpen}
+          url={summaryUrl}
+          title={summaryTitle}
+          linkId={summaryLinkId}
+        />
+      )}
     </div>
   );
 }

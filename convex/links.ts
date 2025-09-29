@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, action, internalMutation, internalQuery, internalAction } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 export const create = mutation({
   args: {
@@ -10,14 +11,22 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     const now = Date.now();
-    return await ctx.db.insert("links", {
+    const linkId = await ctx.db.insert("links", {
       title: args.title,
       url: args.url,
       tags: args.tags || [],
       userId: args.userId,
+      summaryStatus: "pending",
       createdAt: now,
       updatedAt: now,
     });
+
+    // Schedule summary generation in the background
+    await ctx.scheduler.runAfter(0, internal.links.generateSummary, {
+      linkId,
+    });
+
+    return linkId;
   },
 });
 
@@ -146,5 +155,130 @@ export const getAllTags = query({
     });
 
     return Array.from(tagSet).sort();
+  },
+});
+
+export const getSummary = query({
+  args: {
+    linkId: v.id("links"),
+    userId: v.id("users")
+  },
+  handler: async (ctx, args) => {
+    const link = await ctx.db.get(args.linkId);
+
+    // Only return the summary if it belongs to the user
+    if (link && link.userId === args.userId) {
+      return {
+        summary: link.summary,
+        summaryStatus: link.summaryStatus,
+        summaryError: link.summaryError,
+      };
+    }
+
+    return null;
+  },
+});
+
+// Internal mutation to update summary status
+export const updateSummaryStatus = internalMutation({
+  args: {
+    linkId: v.id("links"),
+    status: v.union(v.literal("pending"), v.literal("completed"), v.literal("failed")),
+    summary: v.optional(v.string()),
+    error: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const updateData: any = {
+      summaryStatus: args.status,
+      updatedAt: Date.now(),
+    };
+
+    if (args.summary !== undefined) {
+      updateData.summary = args.summary;
+    }
+
+    if (args.error !== undefined) {
+      updateData.summaryError = args.error;
+    }
+
+    await ctx.db.patch(args.linkId, updateData);
+  },
+});
+
+// Background action to generate summaries
+export const generateSummary = internalAction({
+  args: {
+    linkId: v.id("links"),
+  },
+  handler: async (ctx, args) => {
+    try {
+      // Get the link details
+      const link = await ctx.runQuery(internal.links.getLinkForSummary, {
+        linkId: args.linkId,
+      });
+
+      if (!link) {
+        throw new Error("Link not found");
+      }
+
+      // Call the scraping API
+      const scrapeResponse = await fetch(`${process.env.CONVEX_SITE_URL}/api/scrape`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: link.url }),
+      });
+
+      const scrapeResult = await scrapeResponse.json();
+
+      if (!scrapeResult.success) {
+        throw new Error(scrapeResult.error || 'Failed to scrape page');
+      }
+
+      // Call the OpenAI API
+      const summaryResponse = await fetch(`${process.env.CONVEX_SITE_URL}/api/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          markdown: scrapeResult.data.markdown,
+          title: scrapeResult.data.title,
+          url: scrapeResult.data.url,
+        }),
+      });
+
+      const summaryResult = await summaryResponse.json();
+
+      if (!summaryResult.success) {
+        throw new Error(summaryResult.error || 'Failed to generate summary');
+      }
+
+      // Update the link with the summary
+      await ctx.runMutation(internal.links.updateSummaryStatus, {
+        linkId: args.linkId,
+        status: "completed",
+        summary: summaryResult.summary,
+      });
+
+    } catch (error) {
+      console.error('Failed to generate summary:', error);
+
+      // Update the link with error status
+      await ctx.runMutation(internal.links.updateSummaryStatus, {
+        linkId: args.linkId,
+        status: "failed",
+        error: error instanceof Error ? error.message : 'Failed to generate summary',
+      });
+    }
+  },
+});
+
+// Internal query to get link for summary generation
+export const getLinkForSummary = internalQuery({
+  args: { linkId: v.id("links") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.linkId);
   },
 });

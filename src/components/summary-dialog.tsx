@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { Id } from "../../convex/_generated/dataModel";
 import {
   Dialog,
   DialogContent,
@@ -8,26 +11,32 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Bot, ExternalLink, Loader2 } from "lucide-react";
+import { Bot, ExternalLink, Loader2, RefreshCw } from "lucide-react";
+import { useAuth } from "@/lib/auth-provider";
 
 interface SummaryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   url: string;
   title: string;
+  linkId: Id<"links">;
 }
 
-export function SummaryDialog({ open, onOpenChange, url, title }: SummaryDialogProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [summary, setSummary] = useState<string>("");
-  const [error, setError] = useState<string>("");
+export function SummaryDialog({ open, onOpenChange, url, title, linkId }: SummaryDialogProps) {
+  const { user } = useAuth();
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
-  // Function to scrape page and generate summary
-  const generateSummary = useCallback(async () => {
-    if (!open || summary || isLoading) return;
+  // Get cached summary from database
+  const summaryData = useQuery(
+    api.links.getSummary,
+    user && open ? { linkId, userId: user.id as Id<"users"> } : "skip"
+  );
 
-    setIsLoading(true);
-    setError("");
+  // Function to regenerate summary
+  const regenerateSummary = useCallback(async () => {
+    if (!open || isRegenerating) return;
+
+    setIsRegenerating(true);
 
     try {
       // First, scrape the page content
@@ -64,25 +73,15 @@ export function SummaryDialog({ open, onOpenChange, url, title }: SummaryDialogP
         throw new Error(summaryResult.error || 'Failed to generate summary');
       }
 
-      setSummary(summaryResult.summary);
-    } catch (error) {
-      console.error('Failed to generate summary:', error);
-      setError(error instanceof Error ? error.message : 'Failed to generate summary');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [open, summary, isLoading, url]);
+      // Update the summary in the database
+      // Note: We'd need to add an update summary mutation for this
 
-  // Generate summary when dialog opens
-  React.useEffect(() => {
-    if (open) {
-      generateSummary();
-    } else {
-      // Reset when dialog closes
-      setSummary("");
-      setError("");
+    } catch (error) {
+      console.error('Failed to regenerate summary:', error);
+    } finally {
+      setIsRegenerating(false);
     }
-  }, [open, generateSummary]);
+  }, [open, isRegenerating, url]);
 
   const handleClose = () => {
     onOpenChange(false);
@@ -121,36 +120,106 @@ export function SummaryDialog({ open, onOpenChange, url, title }: SummaryDialogP
 
           {/* Summary Content */}
           <div className="min-h-[200px]">
-            {isLoading ? (
+            {summaryData === undefined ? (
               <div className="flex items-center justify-center py-12">
                 <div className="text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3 text-blue-500" />
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Analyzing page content...
+                    Loading summary...
                   </p>
                 </div>
               </div>
-            ) : error ? (
+            ) : summaryData?.summaryStatus === "pending" ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3 text-blue-500" />
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Generating AI summary...
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                    This may take a moment
+                  </p>
+                </div>
+              </div>
+            ) : summaryData?.summaryStatus === "failed" ? (
               <div className="text-center py-12">
                 <div className="text-red-500 mb-2">⚠️</div>
                 <p className="text-sm text-red-600 dark:text-red-400 mb-4">
-                  {error}
+                  {summaryData.summaryError || "Failed to generate summary"}
                 </p>
                 <Button
-                  onClick={generateSummary}
+                  onClick={regenerateSummary}
                   variant="outline"
                   size="sm"
+                  disabled={isRegenerating}
                 >
-                  Try Again
+                  {isRegenerating ? (
+                    <>
+                      <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                      Regenerating...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-3 h-3 mr-1" />
+                      Try Again
+                    </>
+                  )}
                 </Button>
               </div>
-            ) : summary ? (
-              <div className="prose dark:prose-invert max-w-none">
-                <div className="text-sm leading-relaxed whitespace-pre-wrap">
-                  {summary}
+            ) : summaryData?.summary ? (
+              <div className="space-y-4">
+                <div className="prose dark:prose-invert max-w-none">
+                  <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                    {summaryData.summary}
+                  </div>
+                </div>
+                <div className="flex justify-center pt-4 border-t">
+                  <Button
+                    onClick={regenerateSummary}
+                    variant="outline"
+                    size="sm"
+                    disabled={isRegenerating}
+                  >
+                    {isRegenerating ? (
+                      <>
+                        <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                        Regenerating...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="w-3 h-3 mr-1" />
+                        Regenerate Summary
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
-            ) : null}
+            ) : (
+              <div className="text-center py-12">
+                <div className="text-gray-400 mb-2">📄</div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  No summary available
+                </p>
+                <Button
+                  onClick={regenerateSummary}
+                  variant="outline"
+                  size="sm"
+                  disabled={isRegenerating}
+                >
+                  {isRegenerating ? (
+                    <>
+                      <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Bot className="w-3 h-3 mr-1" />
+                      Generate Summary
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 

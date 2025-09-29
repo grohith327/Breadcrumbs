@@ -37,7 +37,7 @@ interface LinkCardProps {
   };
   onTagClick?: (tag: string) => void;
   selectedTags?: string[];
-  onAIClick?: (url: string, title: string) => void;
+  onAIClick?: (url: string, title: string, linkId: Id<"links">) => void;
 }
 
 export function LinkCard({ link, onTagClick, selectedTags = [], onAIClick }: LinkCardProps) {
@@ -111,7 +111,7 @@ export function LinkCard({ link, onTagClick, selectedTags = [], onAIClick }: Lin
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onAIClick?.(link.url, link.title)}
+              onClick={() => onAIClick?.(link.url, link.title, link._id)}
               title="Generate AI summary of this page"
               className="h-8 w-8 p-0"
             >

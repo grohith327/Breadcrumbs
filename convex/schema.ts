@@ -30,11 +30,15 @@ export default defineSchema({
     url: v.string(),
     tags: v.optional(v.array(v.string())),
     userId: v.optional(v.id("users")),
+    summary: v.optional(v.string()),
+    summaryStatus: v.optional(v.union(v.literal("pending"), v.literal("completed"), v.literal("failed"))),
+    summaryError: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_user_and_created", ["userId", "createdAt"])
     .index("by_created_at", ["createdAt"])
+    .index("by_summary_status", ["summaryStatus"])
     .searchIndex("search_title", {
       searchField: "title",
       filterFields: ["userId"],
