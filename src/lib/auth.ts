@@ -23,7 +23,7 @@ export const auth = betterAuth({
 
                     // Send magic link email via Resend
                     const { error } = await resend.emails.send({
-                        from: 'Breadcrumbs <onboarding@resend.dev>',
+                        from: 'Breadcrumbs <noreply@altic.dev>',
                         to: [data.email],
                         subject: '🍞 Sign in to Breadcrumbs',
                         html: `
